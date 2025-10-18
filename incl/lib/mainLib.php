@@ -662,7 +662,7 @@ class mainLib {
 		$query = $db->prepare("INSERT INTO modactions (type, value, value3, timestamp, account) VALUES ('3', :value, :levelID, :timestamp, :id)");
 		$query->execute([':value' => $coins, ':timestamp' => time(), ':id' => $accountID, ':levelID' => $levelID]);
 	}
-	public function songReupload($url){
+	public function songReupload($url, $customName = ""){
 		require __DIR__ . "/../../incl/lib/connection.php";
 		require_once __DIR__ . "/../../incl/lib/exploitPatch.php";
 		$song = str_replace("www.dropbox.com","dl.dropboxusercontent.com",$url);
@@ -670,12 +670,18 @@ class mainLib {
 			$song = str_replace(["?dl=0","?dl=1"],"",$song);
 			$song = trim($song);
 			$query = $db->prepare("SELECT count(*) FROM songs WHERE download = :download");
-			$query->execute([':download' => $song]);	
+			$query->execute([':download' => $song]);    
 			$count = $query->fetchColumn();
 			if($count != 0){
 				return "-3";
 			}
-			$name = ExploitPatch::remove(urldecode(str_replace([".mp3",".webm",".mp4",".wav"], "", basename($song))));
+			$nameFromUrl = ExploitPatch::remove(urldecode(str_replace([".mp3",".webm",".mp4",".wav",".ogg",".flac",".m4a",".aac"], "", basename($song))));
+			$name = "";
+			if (!empty($customName)) {
+				$name = $customName;
+			} else {
+				$name = $nameFromUrl !== "" ? $nameFromUrl : "Reuploaded song";
+			}
 			$author = "Reupload";
 			$info = $this->getFileInfo($song);
 			$size = $info['size'];
@@ -690,6 +696,93 @@ class mainLib {
 		}else{
 			return "-2";
 		}
+	}
+	public function songReuploadFile($fileArray, $customName = ""){
+		require __DIR__ . "/../../incl/lib/connection.php";
+		require_once __DIR__ . "/../../incl/lib/exploitPatch.php";
+	
+		$maxSizeBytes = 100 * 1024 * 1024;
+		$allowedMime = [
+			"audio/mpeg",
+			"audio/mp3",
+			"audio/ogg"
+		];
+		$webBasePath = "/data/songs";
+		$filesystemPath = __DIR__ . "/../../data/songs";
+	
+		if (!isset($fileArray) || $fileArray['error'] !== UPLOAD_ERR_OK) {
+			return "-2"; // upload error
+		}
+	
+		if ($fileArray['size'] <= 0 || $fileArray['size'] > $maxSizeBytes) {
+			return "-5"; // size error
+		}
+	
+		$finfo = finfo_open(FILEINFO_MIME_TYPE);
+		$detected = finfo_file($finfo, $fileArray['tmp_name']);
+		finfo_close($finfo);
+	
+		if (!in_array($detected, $allowedMime)) {
+			return "-4"; // wrong mime type
+		}
+	
+		$extMap = [
+			"audio/mpeg" => "mp3",
+			"audio/mp3"  => "mp3",
+			"audio/ogg"  => "ogg"
+		];
+		$ext = isset($extMap[$detected]) ? $extMap[$detected] : pathinfo($fileArray['name'], PATHINFO_EXTENSION);
+		if ($ext === "") $ext = "bin";
+	
+		$length = 12;
+		$chars = 'abdefhiknrstyzABDEFGHKNQRSTYZ23456789';
+		$numChars = strlen($chars);
+		$randStr = '';
+		for ($i = 0; $i < $length; $i++) {
+			$randStr .= substr($chars, rand(0, $numChars - 1), 1);
+		}
+		$finalName = $randStr . "." . $ext;
+	
+		if (!is_dir($filesystemPath)) {
+			if (!mkdir($filesystemPath, 0755, true)) {
+				return "-6";
+			}
+		}
+	
+		$destination = rtrim($filesystemPath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $finalName;
+	
+		if (!move_uploaded_file($fileArray['tmp_name'], $destination)) {
+			return "-3"; // move failed
+		}
+	
+		$nameFromFile = ExploitPatch::remove(urldecode(str_replace([".mp3",".webm",".mp4",".wav",".ogg",".flac",".m4a",".aac"], "", basename($fileArray['name']))));
+		if (!empty($customName)) {
+			$name = $customName;
+		} else {
+			$name = $nameFromFile !== "" ? $nameFromFile : "Uploaded song";
+		}
+	
+		$sizeMB = round(filesize($destination) / 1024 / 1024, 2);
+	
+		$servername = $_SERVER['SERVER_NAME'];
+		$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https" : "http";
+		$songUrl = "$protocol://$servername" . rtrim($webBasePath, "/") . "/" . $finalName;
+	
+		$hash = "";
+	
+		$query = $db->prepare("SELECT count(*) FROM songs WHERE download = :download");
+		$query->execute([':download' => $songUrl]);
+		$count = $query->fetchColumn();
+		if ($count != 0) {
+			@unlink($destination);
+			return "-7"; // duplicate
+		}
+	
+		$query = $db->prepare("INSERT INTO songs (name, authorID, authorName, size, download, hash)
+			VALUES (:name, '9', :author, :size, :download, :hash)");
+		$query->execute([':name' => $name, ':download' => $songUrl, ':author' => "Reupload", ':size' => $sizeMB, ':hash' => $hash]);
+	
+		return $db->lastInsertId();
 	}
 	public function getFileInfo($url){
 		$ch = curl_init($url);
