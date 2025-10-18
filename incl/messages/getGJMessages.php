@@ -30,7 +30,7 @@ if($msgcount == 0){
 }
 foreach ($result as &$message1) {
 	if($message1["messageID"]!=""){
-		$uploadDate = date("d/m/Y G.i", $message1["timestamp"]);
+		$uploadDate = $gs->makeTime($result["timestamp"]);
 		if($getSent == 1){
 			$accountID = $message1["toAccountID"];
 		}else{

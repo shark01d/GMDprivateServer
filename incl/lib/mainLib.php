@@ -214,7 +214,7 @@ class mainLib {
 		return $gauntlets[$id];
 	}
 
-	function makeTime($time) {
+	public function makeTime($time) {
 		// taken from https://stackoverflow.com/a/36297417
 		$time = time() - $time;
 		$time = ($time < 1) ? 1 : $time;

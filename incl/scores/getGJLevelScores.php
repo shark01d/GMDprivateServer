@@ -82,7 +82,7 @@ foreach ($result as &$score) {
 	$query2->execute([':extID' => $extID]);
 	$user = $query2->fetchAll();
 	$user = $user[0];
-	$time = date("d/m/Y G.i", $score["uploadDate"]);
+	$time = $gs->makeTime($result["uploadDate"]);
 	if($user["isBanned"]==0){
 		if($score["percent"] == 100){
 			$place = 1;
