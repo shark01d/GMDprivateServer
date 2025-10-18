@@ -130,6 +130,7 @@ class dashboardLib{
 						<div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
 							<a class="dropdown-item" href="../tools/levelReupload.php">'.$this->getLocalizedString("levelReupload").' (T) (note: gonna be both gdps to gd and gd to gdps)</a>
 							<a class="dropdown-item" href="reupload/songAdd.php">'.$this->getLocalizedString("songAdd").'</a>
+							<a class="dropdown-item" href="reupload/songAddFile.php">Add a Song from File</a>
 						</div>
 					</li>
 					<li class="nav-item dropdown '.$statsActive.'">
