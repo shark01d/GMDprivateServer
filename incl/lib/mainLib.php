@@ -743,8 +743,8 @@ class mainLib {
             "audio/mp3",
             "audio/ogg"
         ];
-        $webBasePath = "/data/songs";
-        $filesystemPath = __DIR__ . "/../../data/songs";
+        $webBasePath = "/songs";
+        $filesystemPath = __DIR__ . "/../../songs";
 
         if (!isset($fileArray) || $fileArray['error'] !== UPLOAD_ERR_OK) {
             return "-2"; // upload error
@@ -773,7 +773,7 @@ class mainLib {
         }
 
         if (!is_dir($filesystemPath)) {
-            if (!mkdir($filesystemPath, 0755, true)) {
+            if (!mkdir($filesystemPath, 0755)) {
                 return "-6";
             }
         }
