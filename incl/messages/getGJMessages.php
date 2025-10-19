@@ -4,6 +4,8 @@ chdir(dirname(__FILE__));
 include "../lib/connection.php";
 require_once "../lib/GJPCheck.php";
 require_once "../lib/exploitPatch.php";
+require_once "../lib/mainLib.php";
+$gs = new mainLib();
 $msgstring = "";
 //code begins
 $toAccountID = GJPCheck::getAccountIDOrDie();
@@ -30,7 +32,7 @@ if($msgcount == 0){
 }
 foreach ($result as &$message1) {
 	if($message1["messageID"]!=""){
-		$uploadDate = $gs->makeTime($result["timestamp"]);
+		$uploadDate = $gs->makeTime($message1["timestamp"]);
 		if($getSent == 1){
 			$accountID = $message1["toAccountID"];
 		}else{

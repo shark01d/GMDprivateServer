@@ -3,6 +3,8 @@ chdir(dirname(__FILE__));
 include "../lib/connection.php";
 require_once "../lib/exploitPatch.php";
 require_once "../lib/GJPCheck.php";
+require_once "../lib/mainLib.php";
+$gs = new mainLib();
 $reqstring = "";
 $getSent = !empty($_POST["getSent"]) ? ExploitPatch::remove($_POST["getSent"]) : 0;
 
@@ -43,7 +45,7 @@ foreach($result as &$request) {
 	$query->execute([':requester' => $requester]);
 	$result2 = $query->fetchAll();
 	$user = $result2[0];
-	$uploadTime = $gs->makeTime($result["uploadDate"]);
+	$uploadTime = $gs->makeTime($request["uploadDate"]);
 	$extid = is_numeric($user['extID']) ? $user['extID'] : 0;
 	$reqstring .= "1:".$user["userName"].":2:".$user["userID"].":9:".$user["icon"].":10:".$user["color1"].":11:".$user["color2"].":14:".$user["iconType"].":15:".$user["special"].":16:".$extid.":32:".$request["ID"].":35:".$request["comment"].":41:".$request["isNew"].":37:".$uploadTime."|";
 
