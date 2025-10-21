@@ -13,19 +13,30 @@ if (!empty($_POST['url']) || isset($_POST['name'])) {
     $customName = isset($_POST['name']) ? trim($_POST['name']) : '';
     $songID = $gs->songReupload($_POST['url'], $customName);
 
-    if ($songID < 0) {
+    if (is_array($songID) && isset($songID['duplicate']) && $songID['duplicate'] === true) {
+        $existingId = $songID['id'];
+        $dl->printBox(
+            "<h1>" . $dl->getLocalizedString('songAdd') . "</h1>
+            <p>This song already exists. Song ID: {$existingId}</p>
+            <a class=\"btn btn-primary btn-block\" href=\"" . $_SERVER['REQUEST_URI'] . "\">" .
+                $dl->getLocalizedString('songAddAnotherBTN') . "</a>",
+            'reupload'
+        );
+    } elseif ($songID < 0) {
         $errorDesc = $dl->getLocalizedString("songAddError{$songID}");
         $dl->printBox(
             '<h1>' . $dl->getLocalizedString('songAdd') . "</h1>
             <p>" . $dl->getLocalizedString('errorGeneric') . " $songID ($errorDesc)</p>
-            <a class=\"btn btn-primary btn-block\" href=\"" . $_SERVER['REQUEST_URI'] . "\">" . $dl->getLocalizedString('tryAgainBTN') . "</a>",
+            <a class=\"btn btn-primary btn-block\" href=\"" . $_SERVER['REQUEST_URI'] . "\">" .
+                $dl->getLocalizedString('tryAgainBTN') . "</a>",
             'reupload'
         );
     } else {
         $dl->printBox(
             "<h1>" . $dl->getLocalizedString('songAdd') . "</h1>
             <p>Song uploaded! ID: $songID</p>
-            <a class=\"btn btn-primary btn-block\" href=\"" . $_SERVER['REQUEST_URI'] . "\">" . $dl->getLocalizedString('songAddAnotherBTN') . "</a>",
+            <a class=\"btn btn-primary btn-block\" href=\"" . $_SERVER['REQUEST_URI'] . "\">" .
+                $dl->getLocalizedString('songAddAnotherBTN') . "</a>",
             'reupload'
         );
     }

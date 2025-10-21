@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-ini_set("memory_limit","256M");
+ini_set("memory_limit", "256M");
 
 include __DIR__ . "/../../incl/lib/connection.php";
 require_once __DIR__ . "/../incl/dashboardLib.php";
@@ -30,7 +30,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['songfile'])) {
     $customName = isset($_POST['name']) ? trim($_POST['name']) : "";
     $result = $gs->songReuploadFile($_FILES['songfile'], $customName);
 
-    if (is_numeric($result) && $result > 0) {
+    if (is_array($result) && isset($result['duplicate']) && $result['duplicate'] === true) {
+        $id = (int)$result['id'];
+        header("Location: " . strtok($_SERVER['REQUEST_URI'], '?') . "?duplicate=" . $id);
+        exit;
+    } elseif (is_numeric($result) && $result > 0) {
         $id = (int)$result;
         header("Location: " . strtok($_SERVER['REQUEST_URI'], '?') . "?uploaded=" . $id);
         exit;
@@ -45,6 +49,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['songfile'])) {
         $dl->printBox(
             "<h1>" . $dl->getLocalizedString("songAdd") . "</h1>
              <p>Song uploaded! ID: {$resultId}</p>
+             <a class='btn btn-primary btn-block' href='" . strtok($_SERVER["REQUEST_URI"], '?') . "'>" .
+                $dl->getLocalizedString("songAddAnotherBTN") .
+             "</a>",
+            "reupload"
+        );
+        exit;
+    }
+
+    if (isset($_GET['duplicate'])) {
+        $resultId = (int)$_GET['duplicate'];
+        $dl->printBox(
+            "<h1>" . $dl->getLocalizedString("songAdd") . "</h1>
+             <p>This song already exists. Song ID: {$resultId}</p>
              <a class='btn btn-primary btn-block' href='" . strtok($_SERVER["REQUEST_URI"], '?') . "'>" .
                 $dl->getLocalizedString("songAddAnotherBTN") .
              "</a>",
@@ -70,10 +87,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['songfile'])) {
                 $errText = "File too large.";
                 break;
             case "-6":
-                $errText = "Server error creating storage folder.";
+                $errText = "Failed to create storage directory.";
                 break;
             case "-7":
-                $errText = "This file already exists in the database.";
+                $errText = "Insert failure.";
                 break;
             case "-8":
                 $errText = "Invalid or missing form token.";
