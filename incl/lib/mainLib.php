@@ -747,6 +747,7 @@ class mainLib {
     {
         require __DIR__ . "/../../incl/lib/connection.php";
         require_once __DIR__ . "/../../incl/lib/exploitPatch.php";
+        require_once __DIR__ . "/../../config/servername.php";
 
         $maxSizeBytes = 100 * 1024 * 1024;
         $allowedMime = [
@@ -856,9 +857,8 @@ class mainLib {
 
             $sizeMB = round(filesize($destination) / 1024 / 1024, 2);
 
-            $servername = $_SERVER['SERVER_NAME'];
             $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https" : "http";
-            $songUrl = "$protocol://$servername" . rtrim($webBasePath, "/") . "/" . $finalName;
+            $songUrl = "$protocol://$publicservername" . rtrim($webBasePath, "/") . "/" . $finalName;
 
             $update = $db->prepare("UPDATE songs SET download = :download, size = :size WHERE id = :id");
             $update->execute([
