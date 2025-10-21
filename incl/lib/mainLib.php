@@ -904,4 +904,44 @@ class mainLib {
 		$query->execute([':id' => $listID]);
 		return $query->fetchColumn();
 	}
+
+    public function checkUserdata()
+    {
+        $filesystemPath = __DIR__ . "/../../userdata/keys";
+        $htaccessFile = __DIR__ . "/../../userdata/.htaccess";
+
+        if (!is_dir($filesystemPath)) {
+            if (!mkdir($filesystemPath, 0755, true)) {
+                error_log("Failed to create directory: $filesystemPath");
+                die();
+            }
+        }
+
+        if (!file_exists($htaccessFile)) {
+            if (file_put_contents($htaccessFile, "Deny from all") === false) {
+                error_log("Failed to write .htaccess file: $htaccessFile");
+                die();
+            }
+        }
+    }
+
+    public function checkLevels()
+    {
+        $filesystemPath = __DIR__ . "/../../levels/deleted";
+        $htaccessFile = __DIR__ . "/../../levels/.htaccess";
+
+        if (!is_dir($filesystemPath)) {
+            if (!mkdir($filesystemPath, 0755, true)) {
+                error_log("Failed to create directory: $filesystemPath");
+                die();
+            }
+        }
+
+        if (!file_exists($htaccessFile)) {
+            if (file_put_contents($htaccessFile, "Deny from all") === false) {
+                error_log("Failed to write .htaccess file: $htaccessFile");
+                die();
+            }
+        }
+    }
 }

@@ -7,6 +7,8 @@ include_once "../../incl/lib/defuse-crypto.phar";
 use Defuse\Crypto\KeyProtectedByPassword;
 use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Key;
+require_once "../../incl/lib/mainLib.php";
+$gs = new mainLib();
 $userName = ExploitPatch::remove($_POST["userName"]);
 $oldpass = $_POST["oldpassword"];
 $newpass = $_POST["newpassword"];
@@ -24,9 +26,10 @@ if ($pass == 1) {
 	$query = $db->prepare("SELECT accountID FROM accounts WHERE userName=:userName");	
 	$query->execute([':userName' => $userName]);
 	$accountID = $query->fetchColumn();
-	$saveData = file_get_contents("../../data/accounts/$accountID");
-	if(file_exists("../../data/accounts/keys/$accountID")){
-		$protected_key_encoded = file_get_contents("../../data/accounts/keys/$accountID");
+	$gs->checkUserdata();
+	$saveData = file_get_contents("../../userdata/$accountID");
+	if(file_exists("../../userdata/keys/$accountID")){
+		$protected_key_encoded = file_get_contents("../../userdata/keys/$accountID");
 		if($protected_key_encoded != ""){
 			$protected_key = KeyProtectedByPassword::loadFromAsciiSafeString($protected_key_encoded);
 			$user_key = $protected_key->unlockKey($oldpass);
@@ -35,8 +38,8 @@ if ($pass == 1) {
 			} catch (Defuse\Crypto\Exception\WrongKeyOrModifiedCiphertextException $ex) {
 				exit("Unable to update save data encryption");	
 			}
-			file_put_contents("../../data/accounts/$accountID",$saveData);
-			file_put_contents("../../data/accounts/keys/$accountID","");
+			file_put_contents("../../userdata/$accountID",$saveData);
+			file_put_contents("../../userdata/keys/$accountID","");
 		}
 	}
 }else{

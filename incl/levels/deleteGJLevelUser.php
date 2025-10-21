@@ -19,8 +19,9 @@ $query->execute([':levelID' => $levelID, ':userID' => $userID]);
 $query6 = $db->prepare("INSERT INTO actions (type, value, timestamp, value2) VALUES 
 											(:type,:itemID, :time, :ip)");
 $query6->execute([':type' => 8, ':itemID' => $levelID, ':time' => time(), ':ip' => $userID]);
-if(file_exists("../../data/levels/$levelID") AND $query->rowCount() != 0){
-	rename("../../data/levels/$levelID","../../data/levels/deleted/$levelID");
+$mainLib->checkLevels();
+if(file_exists("../../levels/$levelID") AND $query->rowCount() != 0){
+	rename("../../levels/$levelID","../../levels/deleted/$levelID");
 }
 echo "1";
 ?>

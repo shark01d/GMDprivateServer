@@ -97,8 +97,9 @@ if(!is_numeric($levelID)){
 			$desc = ExploitPatch::remove(base64_decode($desc));
 		}
 		//submitting data
-		if(file_exists("../../data/levels/$levelID")){
-			$levelstring = file_get_contents("../../data/levels/$levelID");
+		$gs->checkLevels();
+		if(file_exists("../../levels/$levelID")){
+			$levelstring = file_get_contents("../../levels/$levelID");
 		}else{
 			$levelstring = $result["levelString"];
 		}

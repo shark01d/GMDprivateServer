@@ -128,8 +128,9 @@ class Commands {
 			$query->execute([':levelID' => $levelID]);
 			$query = $db->prepare("INSERT INTO modactions (type, value, value3, timestamp, account) VALUES ('6', :value, :levelID, :timestamp, :id)");
 			$query->execute([':value' => "1", ':timestamp' => $uploadDate, ':id' => $accountID, ':levelID' => $levelID]);
-			if(file_exists(dirname(__FILE__)."../../data/levels/$levelID")){
-				rename(dirname(__FILE__)."../../data/levels/$levelID",dirname(__FILE__)."../../data/levels/deleted/$levelID");
+			$gs->checkLevels();
+			if(file_exists(dirname(__FILE__)."../../levels/$levelID")){
+				rename(dirname(__FILE__)."../../levels/$levelID",dirname(__FILE__)."../../levels/deleted/$levelID");
 			}
 			return true;
 		}

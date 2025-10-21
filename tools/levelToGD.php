@@ -13,6 +13,8 @@ require "../incl/lib/XORCipher.php";
 require_once "../incl/lib/generatePass.php";
 require_once "../incl/lib/exploitPatch.php";
 require_once "../incl/lib/generateHash.php";
+require_once "../incl/lib/mainLib.php";
+$gs = new mainLib();
 if(!empty($_POST["userhere"]) AND !empty($_POST["passhere"]) AND !empty($_POST["usertarg"]) AND !empty($_POST["passtarg"]) AND !empty($_POST["levelID"])){
 	$userhere = ExploitPatch::remove($_POST["userhere"]);
 	$passhere = ExploitPatch::remove($_POST["passhere"]);
@@ -60,7 +62,8 @@ if(!empty($_POST["userhere"]) AND !empty($_POST["passhere"]) AND !empty($_POST["
 		exit("Invalid levelID");
 	}
 	//TODO: move all file_get_contents calls like this to a separate function
-	$levelString = file_get_contents("../data/levels/$levelID");
+	$gs->checkLevels();
+	$levelString = file_get_contents("../levels/$levelID");
 	$seed2 = base64_encode(XORCipher::cipher(GenerateHash::genSeed2noXor($levelString),41274));
 	$accountID = explode(",",$result)[0];
 	$gjp = base64_encode(XORCipher::cipher($passtarg,37526));
