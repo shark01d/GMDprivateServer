@@ -1,6 +1,8 @@
 <?php
 session_start();
 
+ini_set("memory_limit","256M");
+
 include __DIR__ . "/../../incl/lib/connection.php";
 require_once __DIR__ . "/../incl/dashboardLib.php";
 require_once __DIR__ . "/../../incl/lib/mainLib.php";
