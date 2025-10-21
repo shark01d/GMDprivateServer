@@ -683,26 +683,26 @@ class mainLib {
     {
         require __DIR__ . "/../../incl/lib/connection.php";
         require_once __DIR__ . "/../../incl/lib/exploitPatch.php";
-    
+
         $song = str_replace("www.dropbox.com", "dl.dropboxusercontent.com", $url);
-    
+
         if (filter_var($song, FILTER_VALIDATE_URL) == true && substr($song, 0, 4) == "http") {
             $song = str_replace(["?dl=0", "?dl=1"], "", $song);
             $song = trim($song);
-    
+
             $query = $db->prepare("SELECT id FROM songs WHERE download = :download LIMIT 1");
             $query->execute([':download' => $song]);
             $existingId = $query->fetchColumn();
-    
+
             if ($existingId) {
                 return ["duplicate" => true, "id" => (int)$existingId];
             }
-    
+
             $derivedName = ExploitPatch::charclean(
                 urldecode(str_replace([".mp3", ".webm", ".mp4", ".wav"], "", basename($song)))
             );
             $derivedName = trim(preg_replace('/\s+/', ' ', $derivedName));
-    
+
             if (!empty($customName)) {
                 $candidate = ExploitPatch::charclean(trim(urldecode($customName)));
                 $candidate = trim(preg_replace('/\s+/', ' ', $candidate));
@@ -710,25 +710,25 @@ class mainLib {
             } else {
                 $name = $derivedName;
             }
-    
+
             if (trim($name) === '') {
                 $name = "Custom song";
             }
-    
+
             $info = $this->getFileInfo($song);
             $size = $info['size'];
-    
+
             if (substr($info['type'], 0, 6) != "audio/") {
                 return "-4";
             }
-    
+
             $size = round($size / 1024 / 1024, 2);
-    
+
             $query = $db->prepare(
                 "INSERT INTO songs (name, authorID, authorName, size, download, hash)
                  VALUES (:name, '9', :author, :size, :download, :hash)"
             );
-    
+
             $query->execute([
                 ':name'     => $name,
                 ':download' => $song,
@@ -736,7 +736,7 @@ class mainLib {
                 ':size'     => $size,
                 ':hash'     => "",
             ]);
-    
+
             return (int)$db->lastInsertId();
         } else {
             return "-2";
@@ -747,7 +747,7 @@ class mainLib {
     {
         require __DIR__ . "/../../incl/lib/connection.php";
         require_once __DIR__ . "/../../incl/lib/exploitPatch.php";
-    
+
         $maxSizeBytes = 100 * 1024 * 1024;
         $allowedMime = [
             "audio/mpeg",
@@ -756,23 +756,23 @@ class mainLib {
         ];
         $webBasePath = "/songs";
         $filesystemPath = __DIR__ . "/../../songs";
-    
+
         if (!isset($fileArray) || $fileArray['error'] !== UPLOAD_ERR_OK) {
             return "-2"; // upload error
         }
-    
+
         if ($fileArray['size'] <= 0 || $fileArray['size'] > $maxSizeBytes) {
             return "-5"; // size error
         }
-    
+
         $finfo = finfo_open(FILEINFO_MIME_TYPE);
         $detected = finfo_file($finfo, $fileArray['tmp_name']);
         finfo_close($finfo);
-    
+
         if (!in_array($detected, $allowedMime)) {
             return "-4"; // wrong mime type
         }
-    
+
         $extMap = [
             "audio/mpeg" => "mp3",
             "audio/mp3"  => "mp3",
@@ -782,13 +782,13 @@ class mainLib {
         if ($ext === "") {
             $ext = "bin";
         }
-    
+
         if (!is_dir($filesystemPath)) {
             if (!mkdir($filesystemPath, 0755)) {
                 return "-6";
             }
         }
-    
+
         $nameFromFile = ExploitPatch::charclean(
             urldecode(
                 str_replace(
@@ -799,7 +799,7 @@ class mainLib {
             )
         );
         $nameFromFile = trim(preg_replace('/\s+/', ' ', $nameFromFile));
-    
+
         if (!empty($customName)) {
             $candidate = ExploitPatch::charclean(trim(urldecode($customName)));
             $candidate = trim(preg_replace('/\s+/', ' ', $candidate));
@@ -807,30 +807,30 @@ class mainLib {
         } else {
             $name = $nameFromFile;
         }
-    
+
         if (trim($name) === '') {
             $name = "Custom song";
         }
-    
+
         $hash = hash_file("sha256", $fileArray['tmp_name']);
-    
+
         $check = $db->prepare("SELECT id FROM songs WHERE hash = :hash LIMIT 1");
         $check->execute([':hash' => $hash]);
         $existing = $check->fetchColumn();
-    
+
         if ($existing) {
             @unlink($fileArray['tmp_name']); // cleanup temp file
             return ["duplicate" => true, "id" => (int)$existing];
         }
-    
+
         try {
             $db->beginTransaction();
-    
+
             $query = $db->prepare(
                 "INSERT INTO songs (name, authorID, authorName, size, download, hash)
                  VALUES (:name, '9', :author, :size, :download, :hash)"
             );
-    
+
             $query->execute([
                 ':name'     => $name,
                 ':author'   => "Reupload",
@@ -838,37 +838,37 @@ class mainLib {
                 ':download' => "",
                 ':hash'     => $hash
             ]);
-    
+
             $songId = $db->lastInsertId();
             if (!$songId || !is_numeric($songId)) {
                 $db->rollBack();
                 @unlink($fileArray['tmp_name']);
                 return "-7"; // insert failure
             }
-    
+
             $finalName  = $songId . "." . $ext;
             $destination = rtrim($filesystemPath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $finalName;
-    
+
             if (!move_uploaded_file($fileArray['tmp_name'], $destination)) {
                 $db->rollBack();
                 return "-3"; // move failed
             }
-    
+
             $sizeMB = round(filesize($destination) / 1024 / 1024, 2);
-    
+
             $servername = $_SERVER['SERVER_NAME'];
             $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https" : "http";
             $songUrl = "$protocol://$servername" . rtrim($webBasePath, "/") . "/" . $finalName;
-    
+
             $update = $db->prepare("UPDATE songs SET download = :download, size = :size WHERE id = :id");
             $update->execute([
                 ':download' => $songUrl,
                 ':size'     => $sizeMB,
                 ':id'       => $songId
             ]);
-    
+
             $db->commit();
-    
+
             return (int)$songId;
         } catch (Exception $e) {
             if ($db->inTransaction()) {
