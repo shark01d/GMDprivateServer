@@ -19,7 +19,8 @@ Required version of PHP: 5.5+ (tested up to 8.1.2)
 6) Edit the links in GeometryDash.exe (note: since 2.1 some links are base64 encoded)
 
 #### Updating the server
-See [README.md in the `_updates`](_updates/README.md)
+UPDATES ARE NOT MAINTAINED BY ME!
+[README.md in the `_updates`](_updates/README.md)
 
 ### Credits
 Server implementation and original project by Cvolton - https://github.com/Cvolton/GMDprivateServer/
