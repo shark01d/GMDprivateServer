@@ -751,12 +751,11 @@ class mainLib {
 
         $maxSizeBytes = 100 * 1024 * 1024;
         $allowedMime = [
-            "audio/mpeg",
-            "audio/mp3",
-            "audio/ogg"
+            "audio/ogg",
+            "application/ogg"
         ];
-        $webBasePath = "/songs";
-        $filesystemPath = __DIR__ . "/../../songs";
+        $webBasePath = "/music";
+        $filesystemPath = __DIR__ . "/../../music";
 
         if (!isset($fileArray) || $fileArray['error'] !== UPLOAD_ERR_OK) {
             return "-2"; // upload error
@@ -774,32 +773,12 @@ class mainLib {
             return "-4"; // wrong mime type
         }
 
-        $extMap = [
-            "audio/mpeg" => "mp3",
-            "audio/mp3"  => "mp3",
-            "audio/ogg"  => "ogg"
-        ];
-        $ext = isset($extMap[$detected]) ? $extMap[$detected] : pathinfo($fileArray['name'], PATHINFO_EXTENSION);
-        if ($ext === "") {
-            $ext = "bin";
-        }
-
         if (!is_dir($filesystemPath)) {
             if (!mkdir($filesystemPath, 0755)) {
                 return "-6";
             }
         }
-
-        $nameFromFile = ExploitPatch::charclean(
-            urldecode(
-                str_replace(
-                    [".mp3", ".webm", ".mp4", ".wav", ".ogg", ".flac", ".m4a", ".aac"],
-                    "",
-                    basename($fileArray['name'])
-                )
-            )
-        );
-        $nameFromFile = trim(preg_replace('/\s+/', ' ', $nameFromFile));
+        $nameFromFile = ExploitPatch::charclean(preg_replace('/\s+/', ' ', trim(preg_replace('/\.[^.]+$/', '', urldecode(basename($fileArray['name']))))));
 
         if (!empty($customName)) {
             $candidate = ExploitPatch::charclean(trim(urldecode($customName)));
@@ -844,10 +823,10 @@ class mainLib {
             if (!$songId || !is_numeric($songId)) {
                 $db->rollBack();
                 @unlink($fileArray['tmp_name']);
-                return "-7"; // insert failure
+                return "-7";
             }
 
-            $finalName  = $songId . "." . $ext;
+            $finalName  = $songId . ".ogg";
             $destination = rtrim($filesystemPath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $finalName;
 
             if (!move_uploaded_file($fileArray['tmp_name'], $destination)) {

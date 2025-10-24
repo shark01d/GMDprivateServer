@@ -1,4 +1,10 @@
 <?php
+http_response_code(403);
+echo "This page is temporarily unavailable.";
+exit;
+?>
+
+<?php
 session_start();
 // error_reporting(0);
 

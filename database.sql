@@ -1071,7 +1071,8 @@ ALTER TABLE `roles`
 -- AUTO_INCREMENT для таблицы `songs`
 --
 ALTER TABLE `songs`
-  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT,
+  AUTO_INCREMENT = 40000000;
 
 --
 -- AUTO_INCREMENT для таблицы `suggest`

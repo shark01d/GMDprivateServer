@@ -121,8 +121,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['songfile'])) {
          <form action="" method="post" enctype="multipart/form-data">
              <input type="hidden" name="upload_token" value="' . $tokenEsc . '">
              <div class="form-group">
-                 <label for="fileField">Audio file</label>
-                 <input type="file" class="form-control" id="fileField" name="songfile" accept="audio/*" required>
+                 <label for="fileField">Audio file (OGG ONLY)</label>
+                 <input type="file" class="form-control" id="fileField" name="songfile" accept="audio/ogg,application/ogg" required>
              </div>
              <div class="form-group">
                  <label for="nameField">Song name</label>
