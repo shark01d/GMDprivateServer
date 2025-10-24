@@ -3,6 +3,7 @@
 Basically a Geometry Dash Server Emulator
 
 Supported version of Geometry Dash: 1.0 - 2.2
+
 Song (custom content) downloading is supported only by Geometry Dash 2.2 and higher
 
 (See [the backwards compatibility section of this article](https://github.com/Cvolton/GMDprivateServer/wiki/Deliberate-differences-from-real-GD) for more information)
@@ -14,7 +15,7 @@ Required version of PHP: 5.5+ (tested up to 8.1.2)
 2) Import database.sql into a MySQL/MariaDB database
 3) Edit the connection info at /config/connection.php (Set server to localhost if you're using localhost database)
 4) Edit the public server name at /config/serverName.php (e.g., 192.168.0.xxx, example.com)
-5) Optinal: Change the server icon (icon.png) and description (/config/gdpsSwitcher.php) (optional)
+5) Optional: Change the server icon (icon.png) and description (/config/gdpsSwitcher.php)
 6) Edit the links in GeometryDash.exe (note: since 2.1 some links are base64 encoded)
 
 #### Updating the server
